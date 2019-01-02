@@ -34,7 +34,7 @@
             {
                 "name": "postgres",
                 "hostnames": [
-                    "${dbHostname}"
+                    "${hostname}"
                 ]
             }
         ]
@@ -46,10 +46,10 @@
             "default": "postgres",
             "validation": "[a-zA-Z0-9_]+"
         },
-        "dbHostname": {
+        "hostname": {
             "description": "Hostname of the db container",
             "type": "string",
-            "default": "postgres",
+            "default": "db0",
             "validation": "[a-zA-Z0-9_]+"
         },
         "password": {
