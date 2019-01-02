@@ -1,0 +1,100 @@
+# Ansible Playbook for Subutai Postgresql Blueprint
+--- 
+
+- hosts: postgres
+  remote_user: root
+  tasks:
+
+    # -------------------------------------------------------------------------
+    # Freshen up the host
+    # -------------------------------------------------------------------------
+
+    - name: Disable dpkg fsync
+      raw: test -e /etc/dpkg/dpkg.cfg.d/unsafe-io || echo force-unsafe-io > /etc/dpkg/dpkg.cfg.d/unsafe-io
+
+    - name: Upgrade debian
+      apt:
+        update_cache: true
+        upgrade: true
+
+    # -------------------------------------------------------------------------
+    # Install shit that should be there and fix locales
+    # -------------------------------------------------------------------------
+
+    - name: Install setup tools
+      apt:
+        name: "{{ item }}"
+        allow_unauthenticated: yes
+      with_items:
+        - dirmngr
+        - ca-certificates
+        - sudo
+        - locales
+
+    - name: Transfer locales_setup.sh
+      copy: src=locales_setup.sh dest=/root/locales_setup.sh
+
+    - name: Execute locales_setup.sh
+      command: bash /root/locales_setup.sh
+
+    # -------------------------------------------------------------------------
+    # Add the postgres repo, its key, and update cache
+    # -------------------------------------------------------------------------
+
+    - name: Add postgres repository key
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Add postgres repository
+      apt_repository:
+        repo: deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main
+        update_cache: true
+        state: present
+
+    # -------------------------------------------------------------------------
+    # Big ass install of all that might be needed
+    # -------------------------------------------------------------------------
+
+    - name: Install required debs
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - expect
+        - postgresql
+        - postgresql-client
+        - postgresql-contrib
+        - python-pip
+
+    - name: Install psycopg2 python package
+      pip:
+        name: psycopg2
+
+    # -------------------------------------------------------------------------
+    # Configure the local Postgres Server Instance
+    # -------------------------------------------------------------------------
+
+    - name: Transfer postgres_password.exp to set password
+      copy:
+        src: postgres_password.exp
+        dest: /root/postgres_password.exp
+        mode: 0755
+
+    - name: Change the postgres db user password
+      command: /root/postgres_password.exp "{{ password }}"
+
+    - name: Upload configuration file postgresql.conf
+      copy: 
+        src: postgresql.conf
+        dest: /etc/postgresql/11/main/postgresql.conf
+
+    - name: Upload configuration file pg_hba.conf
+      copy: 
+        src: pg_hba.conf
+        dest: /etc/postgresql/11/main/pg_hba.conf
+
+    - name: Restart database
+      systemd:
+        name: postgresql
+        state: restarted

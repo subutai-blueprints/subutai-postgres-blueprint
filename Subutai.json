@@ -1,0 +1,67 @@
+{
+    "name": "${environmentName}",
+    "description": "Postgresql 11 Database Blueprint",
+    "version": "1.0.0",
+    "ssh-key": "postgres",
+    "author": "https://github.com/akarasulu",
+    "containers": [
+        {
+            "hostname": "${dbHostname}",
+            "template": "debian-stretch",
+            "peer-criteria": "DB-GROUP",
+            "size": "${containerSize}"
+        }
+    ],
+    "peer-criteria": [
+        {
+            "name": "DB-GROUP"
+        }
+    ],
+    "ansible-configuration": {
+        "source-url": "https://github.com/subutai-blueprints/postgresql/archive/master.zip",
+        "ansible-playbook": "main.yml",
+        "extra-vars": [
+            {
+                "key": "hostname",
+                "value": "${hostname}"
+            },
+            {
+                "key": "password",
+                "value": "${password}"
+            }
+        ],
+        "groups": [
+            {
+                "name": "postgres",
+                "hostnames": [
+                    "postgres"
+                ]
+            }
+        ]
+    },
+    "user-variables": {
+        "environmentName": {
+            "description": "Environment's name",
+            "type": "string",
+            "default": "postgres",
+            "validation": "[a-zA-Z0-9_]+"
+        },
+        "dbHostname": {
+            "description": "Hostname of the db container",
+            "type": "string",
+            "default": "postgres",
+            "validation": "[a-zA-Z0-9_]+"
+        },
+        "password": {
+            "description": "Postgres user password",
+            "type": "string",
+            "default": "secret"
+        },
+        "containerSize": {
+            "description": "Container Size",
+            "type": "enum",
+            "default": "MEDIUM",
+            "validation": "TINY,SMALL,MEDIUM,LARGE,HUGE"
+        }
+    }
+}
