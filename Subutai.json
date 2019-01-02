@@ -34,7 +34,7 @@
             {
                 "name": "postgres",
                 "hostnames": [
-                    "postgres"
+                    "${dbHostname}"
                 ]
             }
         ]
