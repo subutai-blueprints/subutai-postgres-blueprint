@@ -100,16 +100,14 @@
         state: restarted
 
     # -------------------------------------------------------------------------
-    # Configure Postgres Server Instance Into PgAdmin if present
+    # Optionally register postgres server to pgadmin when user is provided 
     # -------------------------------------------------------------------------
 
-- hosts: pgadmin
-  remote_user: root
-  tasks:
-
-    # -------------------------------------------------------------------------
-    # Copy over JSON for import
-    # -------------------------------------------------------------------------
+    - name: Upload pgadmin_register.sh script
+      copy: 
+        src: pgadmin_register.sh
+        dest: /root/pgadmin_register.sh
+        mode: 0755
 
     - name: Construct new servers.json to import
-      raw: uname -a
+      command: /root/pgadmin_register.sh "{{ email }}"
