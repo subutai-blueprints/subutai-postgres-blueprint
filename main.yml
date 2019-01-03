@@ -98,3 +98,18 @@
       systemd:
         name: postgresql
         state: restarted
+
+    # -------------------------------------------------------------------------
+    # Configure Postgres Server Instance Into PgAdmin if present
+    # -------------------------------------------------------------------------
+
+- hosts: pgadmin
+  remote_user: root
+  tasks:
+
+    # -------------------------------------------------------------------------
+    # Copy over JSON for import
+    # -------------------------------------------------------------------------
+
+    - name: Construct new servers.json to import
+      raw: uname -a
